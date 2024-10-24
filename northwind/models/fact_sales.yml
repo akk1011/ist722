@@ -2,34 +2,42 @@ version: 2
 
 models:
   - name: fact_sales
-    description: "Transaction fact table with one row per line item ordered, including product data."
+    description: Transaction fact table. One row per line item ordered. Includes product data.
     columns:
       - name: orderid
-        description: "Source key used for drill-through."
+        description: Source key used for drill through
         tests:
           - unique
           - not_null
       - name: customerkey
-        description: "Dimension foreign key for dim_customer."
+        description: Dimension foreign key for dim_customer
         tests:
           - not_null
       - name: employeekey
-        description: "Dimension foreign key for dim_employee."
+        description: Dimension foreign key for dim_employee
         tests:
           - not_null
       - name: orderdatekey
-        description: "Dimension foreign key for dim_date."
+        description: Dimension foreign key for dim_date
         tests:
           - not_null
-      - name: quantityonorder
-        description: "Total quantity of the product ordered."
-      - name: totalorderamount
-        description: "Total amount of product ordered, accounting for discounts."
+      - name: productkey
+        description: Dimension foreign key for dim_product
+        tests:
+          - not_null
+      - name: quantity
+        description: The quantity of the product on the order. Additive fact.
+        tests:
+          - not_null
       - name: extendedpriceamount
-        description: "Additive fact for quantity * unit price."
+        description: Additive fact for quantity * product price
+        tests:
+          - not_null
       - name: discountamount
-        description: "Additive fact for total discount on the order."
+        description: Additive fact for extended price * discount
+        tests:
+          - not_null
       - name: soldamount
-        description: "Amount sold after accounting for discounts."
-      - name: shippedontime
-        description: "Indicates whether the shipment was on time ('Y' or 'N')."
+        description: Additive fact for extended price - discount amount
+        tests:
+          - not_null
