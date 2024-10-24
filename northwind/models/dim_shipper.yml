@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: dim_shipper
+    description: "Shipper Dimension. Contains one row per shipper."
+    columns:
+      - name: shipperkey
+        description: "Surrogate key for the shipper."
+        tests:
+          - not_null
+          - unique
+      - name: shipperid
+        description: "The original shipper ID from the source system."
+        tests:
+          - not_null
+      - name: shippername
+        description: "The name of the shipper company."
