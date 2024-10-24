@@ -2,45 +2,53 @@ with f_sales as (
     select * from {{ ref('fact_sales') }}
 ),
 d_customer as (
-    select * from {{ ref('dim_customer') }}
+    select 
+        customerkey, 
+        companyname as customername, 
+        address as customeraddress, 
+        city as customercity 
+    from {{ ref('dim_customer') }}
 ),
 d_employee as (
-    select * from {{ ref('dim_employee') }}
+    select 
+        employeekey, 
+        employeenamelastfirst as employeename, 
+        employeetitle 
+    from {{ ref('dim_employee') }}
 ),
 d_date as (
-    select * from {{ ref('dim_date') }}
+    select 
+        datekey, 
+        year, 
+        month, 
+        day 
+    from {{ ref('dim_date') }}
 ),
 d_product as (
-    select * from {{ ref('dim_product') }}
-),
-d_shipper as (
-    select * from {{ ref('dim_shipper') }}
+    select 
+        productkey, 
+        productname, 
+        categoryname, 
+        categorydescription 
+    from {{ ref('dim_product') }}
 )
-select 
-    f_sales.orderid,
-    f_sales.customerkey,
-    d_customer.companyname,
-    f_sales.employeekey,
-    d_employee.employeenamefirstlast,
-    f_sales.orderdatekey,
-    f_sales.requireddatekey,
-    f_sales.shippeddatekey,
-    d_date.date as orderdate,
-    f_sales.quantityonorder,
-    f_sales.totalorderamount,
-    f_sales.extendedpriceamount,
-    f_sales.discountamount,
-    f_sales.soldamount,
-    f_sales.daysfromordertoshipped,
-    f_sales.daysfromordertorequired,
-    f_sales.shippedontime,
-    f_sales.shippercompanyname,
+
+select
+    d_customer.customername,
+    d_customer.customeraddress,
+    d_customer.customercity,
+    d_employee.employeename,
+    d_employee.employeetitle,
+    d_date.year,
+    d_date.month,
+    d_date.day,
     d_product.productname,
     d_product.categoryname,
     d_product.categorydescription,
-    d_shipper.shippername
-from f_sales
-left join d_customer on f_sales.customerkey = d_customer.customerkey
-left join d_employee on f_sales.employeekey = d_employee.employeekey
-left join d_date on f_sales.orderdatekey = d_date.datekey
-left join d_shipper on f_sales.shippercompanykey = d_shipper.shipperkey
+    f.orderid, f.orderdatekey, f.customerkey, f.employeekey, f.productkey,
+    f.quantity, f.extendedpriceamount, f.discountamount, f.soldamount
+from f_sales as f
+left join d_customer on f.customerkey = d_customer.customerkey
+left join d_employee on f.employeekey = d_employee.employeekey
+left join d_date on f.orderdatekey = d_date.datekey
+left join d_product on f.productkey = d_product.productkey

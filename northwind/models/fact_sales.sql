@@ -1,57 +1,32 @@
-with stg_orders as 
-(
+with stg_orders as (
     select
-        orderid,  
-        {{ dbt_utils.generate_surrogate_key(['employeeid']) }} as employeekey, 
-        {{ dbt_utils.generate_surrogate_key(['customerid']) }} as customerkey, 
-        replace(to_date(orderdate)::varchar,'-','')::int as orderdatekey,
-        replace(to_date(shippeddate)::varchar,'-','')::int as shippeddatekey,
-        replace(to_date(requireddate)::varchar,'-','')::int as requireddatekey,
-        shipname,
-        shipaddress,
-        shipcity,
-        shipregion,
-        shippostalcode,
-        shipcountry,
-        freight,
-        shipvia
+        OrderID,
+        {{ dbt_utils.generate_surrogate_key(['customerid']) }} as customerkey,
+        {{ dbt_utils.generate_surrogate_key(['employeeid']) }} as employeekey,
+        replace(to_date(orderdate)::varchar, '-', '')::int as orderdatekey
     from {{ source('northwind', 'Orders') }}
 ),
-stg_order_details as
-(
-    select 
+stg_order_details as (
+    select
         orderid,
-        sum(quantity) as quantityonorder, 
-        sum(quantity * unitprice * (1 - discount)) as totalorderamount,
+        {{ dbt_utils.generate_surrogate_key(['productid']) }} as productkey,
+        sum(quantity) as quantity,
         sum(quantity * unitprice) as extendedpriceamount,
-        sum(quantity * unitprice * discount) as discountamount
+        sum(quantity * unitprice * discount) as discountamount,
+        sum((quantity * unitprice) - (quantity * unitprice * discount)) as soldamount
     from {{ source('northwind', 'Order_Details') }}
-    group by orderid
-),
-stg_shippers as (
-    select 
-        shipperid, 
-        companyname as shippercompanyname
-    from {{ source('northwind', 'Shippers') }}
+    group by orderid, productid
 )
 
-select  
+select
     o.orderid,
-    o.employeekey,
     o.customerkey,
+    o.employeekey,
     o.orderdatekey,
-    o.shippeddatekey,
-    o.requireddatekey,
-    od.quantityonorder, 
-    od.totalorderamount,
+    od.productkey,
+    od.quantity,
     od.extendedpriceamount,
     od.discountamount,
-    od.totalorderamount - od.discountamount as soldamount,
-    s.shippercompanyname,
-    o.shippeddatekey - o.orderdatekey as daysfromordertoshipped,
-    o.requireddatekey - o.orderdatekey as daysfromordertorequired,
-    o.shippeddatekey - o.requireddatekey as shippedtorequireddelta,
-    case when o.shippeddatekey - o.requireddatekey <= 0 then 'Y' else 'N' end as shippedontime
+    od.soldamount
 from stg_orders o
-    join stg_order_details od on o.orderid = od.orderid
-    left join stg_shippers s on o.shipvia = s.shipperid
+join stg_order_details od on o.orderid = od.orderid
