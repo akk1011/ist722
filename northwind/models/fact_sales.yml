@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: fact_sales
+    description: "Transaction fact table with one row per line item ordered, including product data."
+    columns:
+      - name: orderid
+        description: "Source key used for drill-through."
+        tests:
+          - unique
+          - not_null
+      - name: customerkey
+        description: "Dimension foreign key for dim_customer."
+        tests:
+          - not_null
+      - name: employeekey
+        description: "Dimension foreign key for dim_employee."
+        tests:
+          - not_null
+      - name: orderdatekey
+        description: "Dimension foreign key for dim_date."
+        tests:
+          - not_null
+      - name: quantityonorder
+        description: "Total quantity of the product ordered."
+      - name: totalorderamount
+        description: "Total amount of product ordered, accounting for discounts."
+      - name: extendedpriceamount
+        description: "Additive fact for quantity * unit price."
+      - name: discountamount
+        description: "Additive fact for total discount on the order."
+      - name: soldamount
+        description: "Amount sold after accounting for discounts."
+      - name: shippedontime
+        description: "Indicates whether the shipment was on time ('Y' or 'N')."
