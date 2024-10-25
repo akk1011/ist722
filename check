@@ -1,0 +1,3 @@
+select *
+from analytics.dbt_kkrishna.my_first_dbt_model
+where id = 1
